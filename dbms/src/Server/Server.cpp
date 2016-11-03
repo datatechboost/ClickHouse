@@ -205,7 +205,7 @@ int Server::main(const std::vector<std::string> & args)
 
 	StatusFile status{path + "status"};
 
-	/// Try to increase limit on number of opened files.
+	/// Try to increase limit on number of open files.
 	{
 		rlimit rlim;
 		if (getrlimit(RLIMIT_NOFILE, &rlim))
@@ -218,16 +218,12 @@ int Server::main(const std::vector<std::string> & args)
 		else
 		{
 			rlim_t old = rlim.rlim_cur;
-			rlim.rlim_cur = rlim.rlim_max;
-			#ifndef __APPLE__
-			if (setrlimit(RLIMIT_NOFILE, &rlim))
-				throw Poco::Exception("Cannot setrlimit");
-			#else
-			LOG_INFO(log, "Setting nofile limit is not supported on MacOS X. Please increase it manually. See MacOS.md for more information. Current limit is '" << old << "'");
-			throw Poco::Exception("setrlimit is not supported on MacOS X");
-			#endif
+			rlim.rlim_cur = config().getUInt("max_open_files", rlim.rlim_max);
+			int rc = setrlimit(RLIMIT_NOFILE, &rlim);
+			if (rc != 0)
+				throw Poco::Exception(std::string("Cannot setrlimit (tried rlim_cur = ") + std::to_string(rlim.rlim_cur) + "): " + strerror(errno) + ". Try to specify max_open_files according to your system limits.");
 
-			LOG_DEBUG(log, "Set rlimit on number of file descriptors to " << rlim.rlim_cur << " (was " << old << ")");
+			LOG_DEBUG(log, "Set rlimit on number of file descriptors to " << rlim.rlim_cur << " (was " << old << ").");
 		}
 	}
 

@@ -32,6 +32,9 @@
 	<!-- Maximum number of concurrent queries. -->
 	<max_concurrent_queries>100</max_concurrent_queries>
 
+	<!-- Set limit of open files (default: maximum). -->
+	<!-- <max_open_files>10240</max_open_files> -->
+
 	<!-- Size of cache of uncompressed blocks of data, used in tables of MergeTree family.
 		 In bytes. Cache is single for server. Memory is allocated only on demand.
 		 Cache is used when 'use_uncompressed_cache' user setting turned on (off by default).
